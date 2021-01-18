@@ -24,6 +24,7 @@ jobs:
             source ~/.nvm/nvm.sh
             cd ~/nijiiro-matsuri
             git pull origin master
+            git reset --hard origin/master
             npm install
             npm run build
             pm2 restart niji-app
