@@ -23,6 +23,13 @@ export class CommandClient {
   }
 
   /**
+   * Get the discord.js guild object for this command client
+   */
+  public async getGuild(): Promise<discord.Guild> {
+    return this.client.guilds.fetch(this.guildId);
+  }
+
+  /**
    * Create or update a command in the guild
    * @param commandData Command data object
    * @returns A promise with the command object that was created
@@ -30,6 +37,7 @@ export class CommandClient {
   public async postCommand(
     commandData: AppCommand
   ): Promise<CommandDescription> {
+    console.log(`Posting command: ${JSON.stringify(commandData)}`);
     return (
       // @ts-expect-error
       this.client.api
@@ -45,6 +53,7 @@ export class CommandClient {
    * @param commandId The command ID to delete
    */
   public async deleteCommand(commandId: string) {
+    console.log(`Deleting command ID ${JSON.stringify(commandId)}`);
     // @ts-expect-error
     this.client.api
       // @ts-expect-error
@@ -77,6 +86,7 @@ export class CommandClient {
    * @returns Function that invalidates the given handler when called.
    */
   public on(commandName: string, handler: CommandHandler): () => void {
+    console.debug(`Registering command handler for '${commandName}' command.`);
     commandName = commandName.toLowerCase();
     if (!this.handlers.has(commandName)) {
       this.handlers.set(commandName, []);
