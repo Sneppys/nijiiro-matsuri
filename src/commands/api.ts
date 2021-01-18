@@ -77,6 +77,7 @@ export class CommandClient {
    * @returns Function that invalidates the given handler when called.
    */
   public on(commandName: string, handler: CommandHandler): () => void {
+    commandName = commandName.toLowerCase();
     if (!this.handlers.has(commandName)) {
       this.handlers.set(commandName, []);
     }
