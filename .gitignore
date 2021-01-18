@@ -1,0 +1,5 @@
+/node_modules/
+/build/
+
+# secrets
+/src/bot.config.json
