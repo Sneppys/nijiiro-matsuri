@@ -1,5 +1,5 @@
 /node_modules/
-/build/
+/dist/
 
 # secrets
 /src/bot.config.json
