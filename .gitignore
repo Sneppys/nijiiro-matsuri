@@ -3,3 +3,6 @@
 
 # secrets
 /src/bot.config.json
+
+# database
+storage.db

@@ -1,41 +1,18 @@
 import * as discord from "discord.js";
 import * as config from "./bot.config.json";
-import { CommandClient, OptionType, ResponseType } from "./commands/api";
+import { CommandClient } from "./commands/api";
+import { initializeStaticCommands } from "./commands/init";
+import { initializeConnection } from "./database/connection";
 
 const client = new discord.Client();
 const cmd = new CommandClient(client, config.guild);
 
 client.once("ready", async () => {
-  cmd.postCommand({
-    name: "testcommand",
-    description: "Command description",
-    options: [
-      {
-        name: "user",
-        description: "User",
-        type: OptionType.USER,
-      },
-    ],
-  });
+  // initialize the database connection
+  initializeConnection();
 
-  cmd.on("testcommand", async (event) => {
-    const userId = event.options.user as string;
-    if (userId) {
-      return {
-        type: ResponseType.MESSAGE,
-        data: {
-          content: `User ID: ${userId}`,
-        },
-      };
-    } else {
-      return {
-        type: ResponseType.MESSAGE,
-        data: {
-          content: `No user given`,
-        },
-      };
-    }
-  });
+  // initialize commands that are always present
+  initializeStaticCommands(cmd);
 
   console.log("Ready!");
 });
