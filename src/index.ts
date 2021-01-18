@@ -20,12 +20,21 @@ client.once("ready", async () => {
 
   cmd.on("testcommand", async (event) => {
     const userId = event.options.user as string;
-    return {
-      type: ResponseType.MESSAGE,
-      data: {
-        content: `User ID: ${userId}`,
-      },
-    };
+    if (userId) {
+      return {
+        type: ResponseType.MESSAGE,
+        data: {
+          content: `User ID: ${userId}`,
+        },
+      };
+    } else {
+      return {
+        type: ResponseType.MESSAGE,
+        data: {
+          content: `No user given`,
+        },
+      };
+    }
   });
 
   console.log("Ready!");
