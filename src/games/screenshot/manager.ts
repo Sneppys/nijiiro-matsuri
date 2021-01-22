@@ -4,6 +4,7 @@ import { isOrganizer } from "../../util/checks";
 import * as gameConfig from "../games.config.json";
 import * as snippetData from "./snippets.json";
 import { Member } from "../../database/models/member";
+import { initialize } from "../../commands/static/awarduser";
 
 /**
  * Manager for the "guess the screenshot" game
@@ -28,6 +29,24 @@ export class ScreenshotGameManager {
   }
 
   /**
+   * Initialize anything that needs to be initialized
+   */
+  async initialize() {
+    this.cmd.on("org-post", async (event) => {
+      if (!isOrganizer(event.userId)) return;
+      await this.postSnippet();
+    });
+
+    this.cmd.on("org-verify", async (event) => {
+      if (!isOrganizer(event.userId)) return;
+      let num = event.options.num as number;
+      let userId = event.options.user as string;
+
+      await this.verifyCorrect(num - 1, userId);
+    });
+  }
+
+  /**
    * Start the game
    */
   async start() {
@@ -44,10 +63,6 @@ export class ScreenshotGameManager {
     await this.cmd.postCommand({
       name: "org-post",
       description: "[Organizer Only] Post a snippet",
-    });
-    this.cmd.on("org-post", async (event) => {
-      if (!isOrganizer(event.userId)) return;
-      await this.postSnippet();
     });
 
     await this.cmd.postCommand({
@@ -67,13 +82,6 @@ export class ScreenshotGameManager {
         },
       ],
     });
-    this.cmd.on("org-verify", async (event) => {
-      if (!isOrganizer(event.userId)) return;
-      let num = event.options.num as number;
-      let userId = event.options.user as string;
-
-      await this.verifyCorrect(num - 1, userId);
-    });
 
     this.active = true;
   }
@@ -89,6 +97,7 @@ export class ScreenshotGameManager {
     await ch.send("Stopping screenshot game!");
 
     await this.cmd.deleteCommandByName("org-post");
+    await this.cmd.deleteCommandByName("org-verify");
 
     this.active = false;
   }
