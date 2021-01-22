@@ -1,0 +1,24 @@
+{
+  "snippets": [
+    {
+      "source": "Seiyuu",
+      "img": "snip1.png",
+      "reward": 1
+    },
+    {
+      "source": "SIFAS",
+      "img": "snip2.png",
+      "reward": 2
+    },
+    {
+      "source": "Anime",
+      "img": "snip3.png",
+      "reward": 3
+    },
+    {
+      "source": "Magazine",
+      "img": "snip4.png",
+      "reward": 4
+    }
+  ]
+}

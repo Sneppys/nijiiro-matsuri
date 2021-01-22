@@ -4,8 +4,8 @@ import { CommandClient, OptionType, ResponseType } from "../api";
 
 export function initialize(cmd: CommandClient) {
   cmd.postCommand({
-    name: "awarduser",
-    description: "Award a user with points",
+    name: "org-awarduser",
+    description: "[Organizer Only] Award a user with points",
     options: [
       {
         name: "user",
@@ -22,7 +22,7 @@ export function initialize(cmd: CommandClient) {
     ],
   });
 
-  cmd.on("awarduser", async (event) => {
+  cmd.on("org-awarduser", async (event) => {
     if (!isOrganizer(event.userId)) return;
 
     const userId = event.options.user as string;
@@ -32,9 +32,7 @@ export function initialize(cmd: CommandClient) {
     const user = await guild.members.fetch(userId);
     if (!user) return;
 
-    const [memberModel] = await Member.findOrCreate({
-      where: { userId },
-    });
+    const memberModel = await Member.withId(userId);
     await memberModel.givePoints(points);
 
     return {
