@@ -10,6 +10,15 @@ export class Member extends Model {
   public totalEarnedPoints!: number;
 
   /**
+   * Gets or creates a Member entry from a given User ID
+   * @param userId The User ID to get an entry for
+   */
+  public static async withId(userId: string): Promise<Member> {
+    let [member] = await Member.findOrCreate({ where: { userId } });
+    return member;
+  }
+
+  /**
    * Give a member points
    * @param amount The number of points to give
    */

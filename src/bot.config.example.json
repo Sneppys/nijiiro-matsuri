@@ -1,5 +1,8 @@
 {
   "token": "<bot token>",
   "guild": "<guild id>",
-  "organizers": ["<user id>"]
+  "organizers": ["<user id>"],
+  "channels": {
+    "games": "<channel id>"
+  }
 }

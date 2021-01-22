@@ -1,15 +1,21 @@
 import { CommandClient } from "./api";
 import * as AwardUser from "./static/awarduser";
 import * as Check from "./static/check";
+import * as GameControls from "./static/gamecontrols";
+import { GameController } from "../games/controller";
 
 /**
  * Initializes any commands that are always present and registers their handlers
  * @param cmd The command client
  */
-export async function initializeStaticCommands(cmd: CommandClient) {
+export async function initializeStaticCommands(
+  cmd: CommandClient,
+  games: GameController
+) {
   await deleteExisting(cmd);
   AwardUser.initialize(cmd);
   Check.initialize(cmd);
+  GameControls.initialize(cmd, games);
 }
 
 /**

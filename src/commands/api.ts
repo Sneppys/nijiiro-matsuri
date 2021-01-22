@@ -64,6 +64,18 @@ export class CommandClient {
   }
 
   /**
+   * Delete a command from the guild with the given name
+   * @param commandName The name of the command to delete
+   */
+  public async deleteCommandByName(commandName: string) {
+    let commands = await this.getCommands();
+    let command = commands.find((cmd) => cmd.name === commandName);
+    if (command) {
+      await this.deleteCommand(command.id);
+    }
+  }
+
+  /**
    * Get all commands in the guild
    * @returns A promise with an array of command objects
    */
