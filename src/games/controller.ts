@@ -35,5 +35,7 @@ export class GameController {
   /**
    * Initialize any games that need to be initialized on startup
    */
-  async initialize() {}
+  async initialize() {
+    await this.screenshotGame.initialize();
+  }
 }
