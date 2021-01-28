@@ -157,17 +157,26 @@ export class CommandClient {
         type: ResponseType.PONG,
       };
     }
-    // send the response to the API
-    // @ts-expect-error
-    await this.client.api
+    // sometimes sending a response can not play nice
+    try {
+      // send the response to the API
       // @ts-expect-error
-      .interactions(interaction.id, interaction.token)
-      .callback.post({
-        data: {
-          type: response.type,
-          data: response.data,
-        },
-      });
+      await this.client.api
+        // @ts-expect-error
+        .interactions(interaction.id, interaction.token)
+        .callback.post({
+          data: {
+            type: response.type,
+            data: response.data,
+          },
+        });
+    } catch (error) {
+      if (response.type !== ResponseType.ACKNOWLEDGE) {
+        console.error("Error sending interaction response!", error);
+        console.error("Interaction object:", interaction);
+        console.error("Response object:", response);
+      }
+    }
   }
 
   /**

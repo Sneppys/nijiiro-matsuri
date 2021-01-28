@@ -8,20 +8,30 @@ export function initialize(cmd: CommandClient, games: GameController) {
     name: "game",
     description: "The game to control",
     choices: [{ name: "Screenshot Game", value: "screenshot" }],
+    required: true,
   };
 
   cmd.postCommand({
     name: "org-gamestart",
     description: "[Organizer Only] Start a game",
-    options: [GAME_OPT],
+    options: [
+      GAME_OPT,
+      {
+        type: OptionType.INTEGER,
+        name: "session",
+        description: "The session number to start",
+        required: true,
+      },
+    ],
   });
   cmd.on("org-gamestart", async (event) => {
     if (!isOrganizer(event.userId)) return;
 
     let game = event.options.game as string;
+    let session = event.options.session as number;
 
     if (game === "screenshot") {
-      await games.screenshotGame.start();
+      await games.screenshotGame.start(session);
     }
   });
 

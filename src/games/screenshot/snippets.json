@@ -1,24 +1,76 @@
 {
-  "snippets": [
+  "session_1": [
     {
-      "source": "Seiyuu",
-      "img": "snip1.png",
-      "reward": 1
+      "number": 1,
+      "img": "snipset1.png",
+      "snippets": [
+        {
+          "number": 1,
+          "source": "All Stars",
+          "reward": 20
+        },
+        {
+          "number": 2,
+          "source": "All Stars",
+          "reward": 20
+        },
+        {
+          "number": 3,
+          "source": "Anime",
+          "reward": 20
+        },
+        {
+          "number": 4,
+          "source": "Anime",
+          "reward": 20
+        },
+        {
+          "number": 5,
+          "source": "Seiyuu",
+          "reward": 45
+        },
+        {
+          "number": 6,
+          "source": "Magazine",
+          "reward": 30
+        }
+      ]
     },
     {
-      "source": "SIFAS",
-      "img": "snip2.png",
-      "reward": 2
-    },
-    {
-      "source": "Anime",
-      "img": "snip3.png",
-      "reward": 3
-    },
-    {
-      "source": "Magazine",
-      "img": "snip4.png",
-      "reward": 4
+      "number": 2,
+      "img": "snipset2.png",
+      "snippets": [
+        {
+          "number": 7,
+          "source": "All Stars",
+          "reward": 20
+        },
+        {
+          "number": 8,
+          "source": "All Stars",
+          "reward": 20
+        },
+        {
+          "number": 9,
+          "source": "Anime",
+          "reward": 20
+        },
+        {
+          "number": 10,
+          "source": "Anime",
+          "reward": 20
+        },
+        {
+          "number": 11,
+          "source": "Seiyuu",
+          "reward": 45
+        },
+        {
+          "number": 12,
+          "source": "Magazine",
+          "reward": 30
+        }
+      ]
     }
   ]
 }
