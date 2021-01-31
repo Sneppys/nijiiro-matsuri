@@ -1,4 +1,4 @@
-import { DataTypes, Model, Sequelize } from "sequelize";
+import { DataTypes, Model, Sequelize, Op } from "sequelize";
 
 /**
  * A model that represents a discord user.
@@ -41,6 +41,17 @@ export class Member extends Model {
     } else {
       return false;
     }
+  }
+
+  public async getPosition(): Promise<number> {
+    let count = await Member.count({
+      where: {
+        totalEarnedPoints: {
+          [Op.gt]: this.totalEarnedPoints,
+        },
+      },
+    });
+    return count + 1;
   }
 
   public static initialize(sequelize: Sequelize) {

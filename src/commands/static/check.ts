@@ -16,7 +16,7 @@ export function initialize(cmd: CommandClient) {
     return {
       type: ResponseType.MESSAGE_WITH_SOURCE,
       data: {
-        content: `You have ${memberModel.points} points! Total earned: ${memberModel.totalEarnedPoints}`,
+        content: `You have ${memberModel.totalEarnedPoints} points!\nAvailable to spend: ${memberModel.totalEarnedPoints}`,
       },
     };
   });

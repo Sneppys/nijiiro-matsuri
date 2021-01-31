@@ -1,8 +1,9 @@
+import { GameController } from "../games/controller";
 import { CommandClient } from "./api";
 import * as AwardUser from "./static/awarduser";
 import * as Check from "./static/check";
 import * as GameControls from "./static/gamecontrols";
-import { GameController } from "../games/controller";
+import * as Leaderboard from "./static/leaderboard";
 
 /**
  * Initializes any commands that are always present and registers their handlers
@@ -13,9 +14,12 @@ export async function initializeStaticCommands(
   games: GameController
 ) {
   await deleteExisting(cmd);
+  // hopefully prevent issues where the commands dont show up on restart
+  await new Promise((r) => setTimeout(r, 200));
   AwardUser.initialize(cmd);
   Check.initialize(cmd);
   GameControls.initialize(cmd, games);
+  Leaderboard.initialize(cmd);
 }
 
 /**
