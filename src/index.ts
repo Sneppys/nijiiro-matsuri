@@ -11,7 +11,8 @@ const games = new GameController(
   client,
   cmd,
   config.guild,
-  config.channels.games
+  config.channels.games,
+  config.channels.log
 );
 
 client.once("ready", async () => {

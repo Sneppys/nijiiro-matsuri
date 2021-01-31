@@ -1,106 +1,50 @@
 import * as discord from "discord.js";
-import { CommandClient, OptionType, ResponseType } from "../../commands/api";
+import { OptionType, ResponseType } from "../../commands/api";
 import { Member } from "../../database/models/member";
 import { isOrganizer } from "../../util/checks";
+import { GameManager } from "../baseManager";
 import * as gameConfig from "../games.config.json";
 import * as snippetData from "./snippets.json";
+
+const CMD_VERIFY = "org-verify";
 
 /**
  * Manager for the "guess the screenshot" game
  */
-export class ScreenshotGameManager {
-  client: discord.Client;
-  cmd: CommandClient;
-  guildId: string;
-  channelId: string;
+export class ScreenshotGameManager extends GameManager {
+  logName = "Screenshot Game";
 
-  active: boolean = false;
   snippetSets: Array<SnippetSet> = [];
   cleanupFunctions: Array<Function> = [];
   correctUsers: Map<number, string> = new Map();
 
-  constructor(
-    client: discord.Client,
-    cmd: CommandClient,
-    guildId: string,
-    channelId: string
-  ) {
-    this.client = client;
-    this.cmd = cmd;
-    this.guildId = guildId;
-    this.channelId = channelId;
-  }
-
-  /**
-   * Initialize anything that needs to be initialized
-   */
-  async initialize() {}
+  tickRate = 7 * 60 * 1000;
+  currentSet = 1;
 
   /**
    * Start the game
    */
-  async start(session: number) {
-    if (this.active) return;
-
-    this.active = true;
-    this.correctUsers = new Map();
-
+  async start(session: number): Promise<boolean> {
     switch (session) {
       case 1:
         this.snippetSets = snippetData.session_1;
     }
 
     if (this.snippetSets.length === 0) {
-      this.active = false;
-      return;
+      return false;
     }
+
+    if (!(await super.start(session))) return false;
 
     let ch = await this.getChannel();
-    if (!ch) {
-      console.error("Cannot start screenshot game: null game channel");
-      this.active = false;
-      return;
-    }
-
     await ch.send(`Starting screenshot game! (Session #${session})`);
+    this.log(`Starting screenshot game session #${session}`);
+
+    this.correctUsers = new Map();
+    this.currentSet = 1;
 
     await this.cmd.postCommand({
-      name: "org-post",
-      description: "[Organizer Only] Post a snippet",
-      options: [
-        {
-          type: OptionType.INTEGER,
-          name: "num",
-          description: "Snippet set index to post",
-          required: true,
-        },
-      ],
-    });
-    let cleanupPost = this.cmd.on("org-post", async (event) => {
-      if (!isOrganizer(event.userId)) return;
-
-      let num = event.options.num as number;
-
-      let set = this.snippetSets.find((s) => s.number === num);
-      if (set) {
-        let embed = new discord.MessageEmbed({
-          title: `Snippet Set #${set.number}`,
-          image: { url: `${gameConfig.screenshot.sourceUrl}${set.img}` },
-        });
-        if (embed) {
-          return {
-            type: ResponseType.MESSAGE,
-            data: {
-              content: "",
-              embeds: [embed],
-            },
-          };
-        }
-      }
-    });
-
-    await this.cmd.postCommand({
-      name: "org-verify",
+      name: CMD_VERIFY,
       description:
         "[Organizer Only] Verify a user won the guess for a given snippet",
       options: [
@@ -118,14 +62,20 @@ export class ScreenshotGameManager {
         },
       ],
     });
-    let cleanupVerify = this.cmd.on("org-verify", async (event) => {
+    let cleanupVerify = this.cmd.on(CMD_VERIFY, async (event) => {
       if (!isOrganizer(event.userId)) return;
 
       let num = event.options.num as number;
       let userId = event.options.user as string;
+      let user = await this.client.users.fetch(userId);
 
       let snip = this.findSnippet(num);
       if (snip === undefined) return;
+
+      let callingUser = await event.getUser();
+      this.log(
+        `\`${callingUser.username}\` verified snippet #${snip.number} for user \`${user.username}#${user.discriminator}\``
+      );
 
       if (this.correctUsers.has(num)) {
         let existingUser = this.correctUsers.get(num);
@@ -134,7 +84,7 @@ export class ScreenshotGameManager {
           return {
             type: ResponseType.MESSAGE,
             data: {
-              content: `[Snippet #${num}] **Correction**: <@${userId}> posted the correct answer!`,
+              content: `[Snippet **#${num}**] **Correction**: <@${userId}> posted the correct answer for #${num}!`,
             },
           };
         }
@@ -146,23 +96,26 @@ export class ScreenshotGameManager {
       return {
         type: ResponseType.MESSAGE,
         data: {
-          content: `[Snippet #${num}] <@${userId}> posted the correct answer! (+${snip.reward} Event Points)`,
+          content: `[Snippet **#${num}**] <@${userId}> posted the correct answer for #${num}! (+${snip.reward} Event Points)`,
         },
       };
     });
 
-    this.cleanupFunctions = [cleanupPost, cleanupVerify];
+    this.cleanupFunctions = [cleanupVerify];
+
+    return true;
   }
 
   /**
    * Stop the game
    */
-  async stop() {
-    if (!this.active) return;
+  async stop(): Promise<boolean> {
+    if (!(await super.stop())) return false;
 
-    this.active = false;
     let ch = await this.getChannel();
     await ch.send("Screenshot game has ended!");
+
+    this.log(`Ending screenshot game session #${this.session}`);
 
     let totalPoints = new Map<string, number>();
     for (let [num, userId] of this.correctUsers.entries()) {
@@ -197,29 +150,56 @@ export class ScreenshotGameManager {
     this.snippetSets = [];
     this.cleanupFunctions = [];
 
-    await this.cmd.deleteCommandByName("org-post");
-    await this.cmd.deleteCommandByName("org-verify");
+    await this.cmd.deleteCommandByName(CMD_VERIFY);
+
+    return true;
   }
 
+  async tick() {
+    if (await this.postSet(this.currentSet)) {
+      this.log(
+        `Successfully posted set ${this.currentSet}, waiting to post the next if it exists`
+      );
+      this.currentSet++;
+    } else {
+      this.stopTicking();
+      this.log("All sets have been posted, game can now safely end");
+    }
+
+    super.tick();
+  }
+
+  /**
+   * Post a snippet set
+   * @param number The set number to post
+   * @returns true if the set existed, false otherwise
+   */
+  async postSet(number: number): Promise<boolean> {
+    let set = this.snippetSets.find((s) => s.number === number);
+    if (set) {
+      let embed = new discord.MessageEmbed({
+        title: `Snippet Set #${set.number}`,
+        image: { url: `${gameConfig.screenshot.sourceUrl}${set.img}` },
+      });
+
+      let ch = await this.getChannel();
+      ch.send(embed);
+
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Get a snippet by its number
+   * @param number The number to search for
+   * @returns The snippet, or undefined if not found
+   */
   findSnippet(number: number): Snippet | undefined {
     for (let set of this.snippetSets) {
       let snip = set.snippets.find((s) => s.number == number);
       if (snip) return snip;
     }
-  }
-
-  /**
-   * Get the text channel object that the game is running in
-   */
-  async getChannel(): Promise<discord.TextChannel | discord.NewsChannel> {
-    let guild = await this.client.guilds.fetch(this.guildId);
-    let channel = guild.channels.resolve(this.channelId);
-    if (channel != null && channel.isText()) {
-      return channel;
-    }
-    throw Error(
-      `Channel ID '${this.channelId}' in guild '${this.guildId}' returns a null or non-text channel`
-    );
   }
 }
 

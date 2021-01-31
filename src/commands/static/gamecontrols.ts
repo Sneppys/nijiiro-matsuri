@@ -31,7 +31,7 @@ export function initialize(cmd: CommandClient, games: GameController) {
     let session = event.options.session as number;
 
     if (game === "screenshot") {
-      await games.screenshotGame.start(session);
+      games.screenshotGame.start(session);
     }
   });
 
@@ -46,7 +46,7 @@ export function initialize(cmd: CommandClient, games: GameController) {
     let game = event.options.game as string;
 
     if (game === "screenshot") {
-      await games.screenshotGame.stop();
+      games.screenshotGame.stop();
     }
   });
 }

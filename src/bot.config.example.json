@@ -3,6 +3,7 @@
   "guild": "<guild id>",
   "organizers": ["<user id>"],
   "channels": {
+    "log": "<channel id>",
     "games": "<channel id>"
   }
 }

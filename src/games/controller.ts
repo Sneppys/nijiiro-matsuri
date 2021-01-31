@@ -10,6 +10,7 @@ export class GameController {
   cmd: CommandClient;
   guildId: string;
   gameChannelId: string;
+  logChannelId: string;
 
   screenshotGame: ScreenshotGameManager;
 
@@ -17,18 +18,21 @@ export class GameController {
     client: discord.Client,
     cmd: CommandClient,
     guildId: string,
-    gameChannelId: string
+    gameChannelId: string,
+    logChannelId: string
   ) {
     this.client = client;
     this.cmd = cmd;
     this.guildId = guildId;
     this.gameChannelId = gameChannelId;
+    this.logChannelId = logChannelId;
 
     this.screenshotGame = new ScreenshotGameManager(
       this.client,
       this.cmd,
       this.guildId,
-      this.gameChannelId
+      this.gameChannelId,
+      this.logChannelId
     );
   }
 
